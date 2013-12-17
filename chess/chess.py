@@ -96,10 +96,15 @@ class ChessPiece:
         self.captured = True
     
     def move(self):
-        pass
+        self.set_x(new_x)
+        self.set_y(new_y)
 
     def is_valid_move(self, new_x, new_y, board):
-        return False
+        if new_x < 0 or new_x >= BOARD_SIZE:
+            return False
+        if new_y < 0 or new_y >= BOARD_SIZE:
+            return False
+        return True
 
     
 
@@ -110,15 +115,13 @@ class Pawn(ChessPiece):
         self.not_yet_moved = True
 
     def move(self, new_x, new_y):
-        self.set_x(new_x)
-        self.set_y(new_y)
+        super(Pawn, self).move(new_x, new_y)
         self.not_yet_moved = False
 
     def is_valid_move(self, new_x, new_y, board):
-        if new_x < 0 or new_x >= BOARD_SIZE:
+        if not super(Pawn, self).is_valid_move(new_x, new_y, board):
             return False
-        if new_y < 0 or new_y >= BOARD_SIZE:
-            return False
+        
         x = self.get_x()
         y = self.get_y()
         black = self.get_color() == "Black"
@@ -182,14 +185,29 @@ board = Board()
 print(board)
 
 # Testing if moving works
+
+# seed data
 white_pawn = Pawn(2, 2, "White")
 board.get_white().append(white_pawn)
 black_pawn = board.get_piece(1, 1)
 
-print("(1, 2):", black_pawn.is_valid_move(1, 2, board)) # should be True
-print("(1, 3):", black_pawn.is_valid_move(1, 3, board)) # should be True
-print("(1, 4):", black_pawn.is_valid_move(1, 4, board)) # should be False
-print("(0, 2):", black_pawn.is_valid_move(0, 2, board)) # should be False
-print("(2, 2):", black_pawn.is_valid_move(2, 2, board)) # should be True
+
+def test_movement(piece, coord, board, expected_value):
+    valid_move = piece.is_valid_move(coord[0], coord[1], board)
+    if expected_value == valid_move:
+        return "\tPASS"
+    else:
+        return "\tFAIL"
+        
+test_coords = {(1, 2): True,
+               (1, 3): True,
+               (1, 4): False,
+               (0, 2): False,
+               (2, 2): True
+               }
+
+for coord in test_coords:
+    expected_value = test_coords[coord]
+    print(str(coord) + ":", test_movement(black_pawn, coord, board, expected_value))
     
 
