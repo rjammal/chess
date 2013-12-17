@@ -15,38 +15,47 @@ class Board:
 
         # pawns
         for i in range(BOARD_SIZE):
-            self.list_black.append(Pawn(FRONT_ROW + 1, i, "Black"))
-            self.list_white.append(Pawn(BACK_ROW - 1, i, "White"))
+            self.list_black.append(Pawn(i, FRONT_ROW + 1, "Black"))
+            self.list_white.append(Pawn(i, BACK_ROW - 1, "White"))
 
         # rooks
-        for x in [LEFT_COLUMN, RIGHT COLUMN]:
-            self.list_black.append(Rook(FRONT_ROW, x, "Black"))
-            self.list_white.append(Rook(BACK_ROW, x, "White"))
+        for x in [LEFT_COLUMN, RIGHT_COLUMN]:
+            self.list_black.append(Rook(x, FRONT_ROW, "Black"))
+            self.list_white.append(Rook(x, BACK_ROW, "White"))
 
         # knights
         for x in [LEFT_COLUMN + 1, RIGHT_COLUMN - 1]:
-            self.list_black.append(Knight(FRONT_ROW, x, "Black"))
-            self.list_white.append(Knight(BACK_ROW, x, "White"))
+            self.list_black.append(Knight(x, FRONT_ROW, "Black"))
+            self.list_white.append(Knight(x, BACK_ROW, "White"))
 
         # bishops
         for x in [LEFT_COLUMN + 2, RIGHT_COLUMN - 2]:
-            self.list_black.append(Bishop(FRONT_ROW, x, "Black"))
-            self.list_white.append(Bishop(BACK_ROW, x, "White"))
+            self.list_black.append(Bishop(x, FRONT_ROW, "Black"))
+            self.list_white.append(Bishop(x, BACK_ROW, "White"))
 
         # queens
-        self.list_black.append(Queen(FRONT_ROW, RIGHT_COLUMN - 3, "Black"))
-        self.list_white.append(Queen(BACK_ROW, RIGHT_COLUMN - 3, "White"))
+        self.list_black.append(Queen(RIGHT_COLUMN - 3, FRONT_ROW, "Black"))
+        self.list_white.append(Queen(RIGHT_COLUMN - 3, BACK_ROW, "White"))
 
         # kings
-        self.list_black.append(King(FRONT_ROW, RIGHT_COLUMN - 4, "Black"))
-        self.list_white.append(King(BACK_ROW, RIGHT_COLUMN - 4, "White"))
+        self.list_black.append(King(RIGHT_COLUMN - 4, FRONT_ROW, "Black"))
+        self.list_white.append(King(RIGHT_COLUMN - 4, BACK_ROW, "White"))
+
+    def __str__(self):
+        print_string = ""
+        for piece in self.get_all_pieces():
+            print_string += str(piece) + '\n'
+        return print_string
 
     def get_black(self):
         return self.list_black
     def get_white(self):
         return self.list_white
     def get_all_pieces(self):
-        return list(self.get_black()).extend(self.get_white())
+        piece_list = []
+        piece_list.extend(self.get_black())
+        piece_list.extend(self.get_white())
+        return piece_list
     def get_piece(self, x, y):
         for piece in self.get_all_pieces():
             if x == piece.get_x() and y == piece.get_y():
@@ -67,6 +76,10 @@ class ChessPiece:
         self.x = x
         self.y = y
         self.color = color
+
+    def __str__(self):
+        return (self.get_color() + " " + str(self.__class__.__name__) +
+                " (" + str(self.get_x()) + ", " + str(self.get_y()) + ")")
 
     def get_x(self):
         return self.x
@@ -97,36 +110,30 @@ class Pawn(ChessPiece):
         self.not_yet_moved = True
 
     def move(self, new_x, new_y):
-        x = self.get_x()
-        y = self.get_y()
-        if self.get_color() == "Black":
-            space_ahead = y + 1
-            if board.is_empty(x, space_ahead):
-                self.set_y(y + 1)
-        elif self.get_color() == "White":
-            space_ahead = y - 1
-            if board.is_empty(x, space_ahead):
-                self.set_y(y - 1)
+        self.set_x(new_x)
+        self.set_y(new_y)
+        self.not_yet_moved = False
 
     def is_valid_move(self, new_x, new_y, board):
         if new_x < 0 or new_x >= BOARD_SIZE:
             return False
         if new_y < 0 or new_y >= BOARD_SIZE:
             return False
-        x = chess_piece.get_x()
-        y = chess_piece.get_y()
+        x = self.get_x()
+        y = self.get_y()
         black = self.get_color() == "Black"
         white = self.get_color() == "White"
+
         
         if board.is_empty(new_x, new_y):
             same_x = x == new_x
             if self.not_yet_moved:
                 if black:
-                    valid_y = (y + 1 == new_y) or
-                              (y + 2 == new_y)
+                    valid_y = ((y + 1) == new_y or
+                               (y + 2) == new_y)
                 elif white:
-                    valid_y = (y - 1 == new_y) or
-                              (y - 2 == new_y)
+                    valid_y = ((y - 1) == new_y or
+                               (y - 2) == new_y)
             else:
                 if black:
                     valid_y = y + 1 == new_y
@@ -146,11 +153,14 @@ class Pawn(ChessPiece):
                 one_row_ahead = y - new_y == 1
                 opposite_color_in_destination = new_location_piece_color == "Black"
 
-            return left_or_right_one and one_row_ahead and opposite_color_in_destination
+            capture_piece = left_or_right_one and one_row_ahead and opposite_color_in_destination
 
-            
-                
-                
+            if capture_piece:
+                piece_in_new_location.set_captured()
+
+            return capture_piece
+
+         
 
 class Knight(ChessPiece):
     pass
@@ -166,4 +176,20 @@ class Queen(ChessPiece):
 
 class King(ChessPiece):
     pass
+
+
+board = Board()
+print(board)
+
+# Testing if moving works
+white_pawn = Pawn(2, 2, "White")
+board.get_white().append(white_pawn)
+black_pawn = board.get_piece(1, 1)
+
+print("(1, 2):", black_pawn.is_valid_move(1, 2, board)) # should be True
+print("(1, 3):", black_pawn.is_valid_move(1, 3, board)) # should be True
+print("(1, 4):", black_pawn.is_valid_move(1, 4, board)) # should be False
+print("(0, 2):", black_pawn.is_valid_move(0, 2, board)) # should be False
+print("(2, 2):", black_pawn.is_valid_move(2, 2, board)) # should be True
+    
 
