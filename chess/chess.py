@@ -60,7 +60,18 @@ class Board:
         for piece in self.get_all_pieces():
             if x == piece.get_x() and y == piece.get_y():
                 return piece
-       
+
+    def remove_piece(self, piece):
+        if piece.get_color() == "Black":
+            self.list_black.remove(piece)
+        elif piece.get_color() == "White":
+            self.list_white.remove(piece)
+    def add_piece(self, piece):
+        if piece.get_color() == "Black":
+            self.list_black.append(piece)
+        elif piece.get_color() == "White":
+            self.list_white.append(piece)
+      
     def is_empty(self, x, y):
         for piece in self.get_all_pieces():
             if x == piece.get_x() and y == piece.get_y():
@@ -95,16 +106,14 @@ class ChessPiece:
     def set_captured(self):
         self.captured = True
     
-    def move(self):
+    def move(self, new_x, new_y):
         self.set_x(new_x)
         self.set_y(new_y)
 
     def is_valid_move(self, new_x, new_y, board):
-        if new_x < 0 or new_x >= BOARD_SIZE:
-            return False
-        if new_y < 0 or new_y >= BOARD_SIZE:
-            return False
-        return True
+        x_on_board = 0 <= new_x < BOARD_SIZE
+        y_on_board = 0 <= new_y < BOARD_SIZE
+        return x_on_board and y_on_board
 
     
 
@@ -119,6 +128,7 @@ class Pawn(ChessPiece):
         self.not_yet_moved = False
 
     def is_valid_move(self, new_x, new_y, board):
+        # if the new location isn't on the board, exit immediately
         if not super(Pawn, self).is_valid_move(new_x, new_y, board):
             return False
         
@@ -163,7 +173,21 @@ class Pawn(ChessPiece):
 
             return capture_piece
 
-         
+    def in_promotion_space(self):
+        if self.get_color() == "White":
+            return self.get_y() == 0
+        elif self.get_color() == "Black":
+            return self.get_y() == BACK_ROW
+
+    def promote(self, board, new_type):
+        if self.in_promotion_space():
+            x = self.get_x()
+            y = self.get_y()
+            color = self.get_color()
+            board.remove_piece(self)
+            new_piece = new_type(x, y, color) 
+            board.add_piece(new_piece)
+            
 
 class Knight(ChessPiece):
     pass
@@ -174,7 +198,7 @@ class Rook(ChessPiece):
 class Bishop(ChessPiece):
     pass
 
-class Queen(ChessPiece):
+class Queen(Bishop):
     pass
 
 class King(ChessPiece):
@@ -198,16 +222,21 @@ def test_movement(piece, coord, board, expected_value):
         return "\tPASS"
     else:
         return "\tFAIL"
-        
+
+# dictionary where the spaces on the board map to whether or not my
+# pawn should be able to move there
 test_coords = {(1, 2): True,
                (1, 3): True,
                (1, 4): False,
                (0, 2): False,
-               (2, 2): True
+               (2, 2): True,
+               (17, 23): False
                }
 
 for coord in test_coords:
     expected_value = test_coords[coord]
     print(str(coord) + ":", test_movement(black_pawn, coord, board, expected_value))
     
-
+black_pawn.move(0,7)
+black_pawn.promote(board, Queen)
+print(str(board))
