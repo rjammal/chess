@@ -211,19 +211,19 @@ class Pawn(ChessPiece):
             
 
 class Knight(ChessPiece):
-    pass
+    pass # Cyrus
 
 class Rook(ChessPiece):
-    pass
+    pass # Cyrus
 
 class Bishop(ChessPiece):
-    pass
+    pass # Rosemary
 
 class Queen(Bishop):
-    pass
+    pass # Rosemary
 
 class King(ChessPiece):
-    pass
+    pass # Cyrus
 
 
 board = Board()
