@@ -122,6 +122,7 @@ class Pawn(ChessPiece):
     def __init__(self, x, y, color):
         super(Pawn, self).__init__(x, y, color)
         self.not_yet_moved = True
+        self.enpassant = False
 
     def move(self, new_x, new_y):
         super(Pawn, self).move(new_x, new_y)
@@ -137,9 +138,12 @@ class Pawn(ChessPiece):
         black = self.get_color() == "Black"
         white = self.get_color() == "White"
 
-        
-        if board.is_empty(new_x, new_y):
-            same_x = x == new_x
+        moving_forward = x == new_x
+
+        if moving_forward:
+            # check if spot ahead is empty
+            if not board.is_empty(x, y + 1):
+                return False
             if self.not_yet_moved:
                 if black:
                     valid_y = ((y + 1) == new_y or
@@ -147,6 +151,21 @@ class Pawn(ChessPiece):
                 elif white:
                     valid_y = ((y - 1) == new_y or
                                (y - 2) == new_y)
+
+        
+        if board.is_empty(new_x, new_y):
+            same_x = x == new_x
+            if self.not_yet_moved:
+                if black:
+##                    # check if spot ahead is empty
+##                    if not board.is_empty(x, y + 1):
+##                        return False
+                    valid_y = ((y + 1) == new_y or
+                               (y + 2) == new_y)
+                elif white:
+                    valid_y = ((y - 1) == new_y or
+                               (y - 2) == new_y)
+                
             else:
                 if black:
                     valid_y = y + 1 == new_y
@@ -187,6 +206,8 @@ class Pawn(ChessPiece):
             board.remove_piece(self)
             new_piece = new_type(x, y, color) 
             board.add_piece(new_piece)
+
+    
             
 
 class Knight(ChessPiece):
