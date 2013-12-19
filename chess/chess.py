@@ -71,6 +71,11 @@ class Board:
             self.list_black.append(piece)
         elif piece.get_color() == "White":
             self.list_white.append(piece)
+
+    def board_move(self, piece, new_x, new_y):
+        if not self.is_empty(new_x, new_y):
+            self.get_piece(new_x, new_y).set_captured()
+        piece.move(new_x, new_y)
       
     def is_empty(self, x, y):
         for piece in self.get_all_pieces():
@@ -125,6 +130,8 @@ class Pawn(ChessPiece):
         self.enpassant = False
 
     def move(self, new_x, new_y):
+        if abs(self.get_y() - new_y) == 2:
+            self.enpassant = True
         super(Pawn, self).move(new_x, new_y)
         self.not_yet_moved = False
 
@@ -151,46 +158,35 @@ class Pawn(ChessPiece):
                 elif white:
                     valid_y = ((y - 1) == new_y or
                                (y - 2) == new_y)
-
-        
-        if board.is_empty(new_x, new_y):
-            same_x = x == new_x
-            if self.not_yet_moved:
-                if black:
-##                    # check if spot ahead is empty
-##                    if not board.is_empty(x, y + 1):
-##                        return False
-                    valid_y = ((y + 1) == new_y or
-                               (y + 2) == new_y)
-                elif white:
-                    valid_y = ((y - 1) == new_y or
-                               (y - 2) == new_y)
-                
             else:
                 if black:
-                    valid_y = y + 1 == new_y
+                    valid_y = (y + 1) == new_y
                 elif white:
-                    valid_y = y - 1 == new_y
-
-            return same_x and valid_y
-
+                    valid_y = (y - 1) == new_y
+            return valid_y
         else:
-            left_or_right_one = abs(new_x - x)
-            piece_in_new_location = board.get_piece(new_x, new_y)
-            new_location_piece_color = piece_in_new_location.get_color()
-            if black: 
-                one_row_ahead = new_y - y == 1
-                opposite_color_in_destination = new_location_piece_color == "White"
-            elif white:
-                one_row_ahead = y - new_y == 1
-                opposite_color_in_destination = new_location_piece_color == "Black"
+            # This is checking all capture scenarios.
+            
+            # Pawn cannot move more than 1 left or right
+            if abs(x - new_x) > 1:
+                return False
 
-            capture_piece = left_or_right_one and one_row_ahead and opposite_color_in_destination
+            if board.is_empty(new_x, new_y):
+                
+                # check for enpassant
+                if not board.is_empty(new_x, y): # check if there is an adjacent piece
+                    adjacent_piece = board.get_piece(new_x, y)
+                    if (adjacent_piece.get_color() != self.get_color() and
+                        adjacent_piece.enpassant):
+                        return True
 
-            if capture_piece:
-                piece_in_new_location.set_captured()
+                return False       
 
-            return capture_piece
+            else:
+                other_piece = board.get_piece(new_x, new_y)
+                return other_piece.get_color() != self.get_color()
+                    
+
 
     def in_promotion_space(self):
         if self.get_color() == "White":
@@ -219,7 +215,7 @@ class Rook(ChessPiece):
 class Bishop(ChessPiece):
     pass # Rosemary
 
-class Queen(Bishop):
+class Queen(ChessPiece):
     pass # Rosemary
 
 class King(ChessPiece):
@@ -261,3 +257,4 @@ for coord in test_coords:
 black_pawn.move(0,7)
 black_pawn.promote(board, Queen)
 print(str(board))
+print(board.get_piece(1, 1))
