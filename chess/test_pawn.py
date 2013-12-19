@@ -1,5 +1,8 @@
 # Testing if pawn movement works
 import chess
+from chess import *
+
+board = Board()
 
 # seed data
 white_pawn = Pawn(2, 2, "White")
@@ -31,4 +34,3 @@ for coord in test_coords:
 black_pawn.move(0,7)
 black_pawn.promote(board, Queen)
 print(str(board))
-print(board.get_piece(1, 1))
