@@ -1,3 +1,4 @@
+1
 # Making a chess game
 
 BOARD_SIZE = 8
@@ -210,8 +211,7 @@ class Pawn(ChessPiece):
             new_piece = new_type(x, y, color) 
             board.add_piece(new_piece)
 
-    
-            
+              
 
 class Knight(ChessPiece):
 
@@ -222,6 +222,7 @@ class Knight(ChessPiece):
         super(Knight, self).move(new_x, new_y)
 
     def is_valid_move(self, new_x, new_y, board):
+
         # check if new location is on board
         if not super(Knight, self).is_valid_move(new_x, new_y, board):
             print('a')
@@ -229,20 +230,21 @@ class Knight(ChessPiece):
 
         x = self.get_x()
         y = self.get_y()
-        # checks for Knight 'L' move
+
+        # check for Knight 'L' move
         if not ((abs(new_x - x) == 2 and abs(new_y - y) == 1) or \
            (abs(new_x - x) == 1 and abs(new_y - y) == 2)):
             print('b')
             return False
-                           
+        # check if new location is open                   
         elif board.is_empty(new_x, new_y):
             print('c')
             return True
-
+        # if new location is already taken
         else:
             piece_in_new_location = board.get_piece(new_x, new_y)
 
-            # checks for opposite color in occupied spot in order to capture
+            # check for opposite color in occupied spot in order to capture
             if self.get_color() != piece_in_new_location.get_color():
                 print('d')
                 piece_in_new_location.set_captured()
