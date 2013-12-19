@@ -47,25 +47,30 @@ class Board:
             print_string += str(piece) + '\n'
         return print_string
 
+    # return list of black pieces
     def get_black(self):
         return self.list_black
+    # return list of white pieces
     def get_white(self):
         return self.list_white
+    # return all pieces on the board
     def get_all_pieces(self):
         piece_list = []
         piece_list.extend(self.get_black())
         piece_list.extend(self.get_white())
         return piece_list
-    def get_piece(self, x, y):
+    # return the piece at a specified location
+    def get_piece(self, x, y):  
         for piece in self.get_all_pieces():
             if x == piece.get_x() and y == piece.get_y():
                 return piece
-
+    # remove piece from the board
     def remove_piece(self, piece):
         if piece.get_color() == "Black":
             self.list_black.remove(piece)
         elif piece.get_color() == "White":
             self.list_white.remove(piece)
+    # add piece to the board
     def add_piece(self, piece):
         if piece.get_color() == "Black":
             self.list_black.append(piece)
@@ -77,13 +82,15 @@ class Board:
             self.get_piece(new_x, new_y).set_captured()
         piece.move(new_x, new_y)
       
+
+    # returns True if a spot is empty, False if occupied  
     def is_empty(self, x, y):
         for piece in self.get_all_pieces():
             if x == piece.get_x() and y == piece.get_y():
                 return False
         return True 
 
-class ChessPiece:
+class ChessPiece():
 
     def __init__(self, x, y, color):
         self.captured = False
@@ -207,7 +214,44 @@ class Pawn(ChessPiece):
             
 
 class Knight(ChessPiece):
-    pass # Cyrus
+
+    def __init__(self, x, y, color):
+        super(Knight, self).__init__(x, y, color)
+
+    def move(self, new_x, new_y):
+        super(Knight, self).move(new_x, new_y)
+
+    def is_valid_move(self, new_x, new_y, board):
+        # check if new location is on board
+        if not super(Knight, self).is_valid_move(new_x, new_y, board):
+            print('a')
+            return False
+
+        x = self.get_x()
+        y = self.get_y()
+        # checks for Knight 'L' move
+        if not ((abs(new_x - x) == 2 and abs(new_y - y) == 1) or \
+           (abs(new_x - x) == 1 and abs(new_y - y) == 2)):
+            print('b')
+            return False
+                           
+        elif board.is_empty(new_x, new_y):
+            print('c')
+            return True
+
+        else:
+            piece_in_new_location = board.get_piece(new_x, new_y)
+
+            # checks for opposite color in occupied spot in order to capture
+            if self.get_color() != piece_in_new_location.get_color():
+                print('d')
+                piece_in_new_location.set_captured()
+                return True
+            # if same color, cannot move into the same spot
+            else:
+                print('e')
+                return False
+
 
 class Rook(ChessPiece):
     pass # Cyrus
@@ -220,8 +264,4 @@ class Queen(ChessPiece):
 
 class King(ChessPiece):
     pass # Cyrus
-
-
-
-
 
