@@ -1,3 +1,4 @@
+1
 # Making a chess game
 
 BOARD_SIZE = 8
