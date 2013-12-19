@@ -212,8 +212,7 @@ class Pawn(ChessPiece):
             new_piece = new_type(x, y, color) 
             board.add_piece(new_piece)
 
-    
-            
+              
 
 class Knight(ChessPiece):
 
@@ -224,6 +223,7 @@ class Knight(ChessPiece):
         super(Knight, self).move(new_x, new_y)
 
     def is_valid_move(self, new_x, new_y, board):
+
         # check if new location is on board
         if not super(Knight, self).is_valid_move(new_x, new_y, board):
             print('a')
@@ -231,20 +231,21 @@ class Knight(ChessPiece):
 
         x = self.get_x()
         y = self.get_y()
-        # checks for Knight 'L' move
+
+        # check for Knight 'L' move
         if not ((abs(new_x - x) == 2 and abs(new_y - y) == 1) or \
            (abs(new_x - x) == 1 and abs(new_y - y) == 2)):
             print('b')
             return False
-                           
+        # check if new location is open                   
         elif board.is_empty(new_x, new_y):
             print('c')
             return True
-
+        # if new location is already taken
         else:
             piece_in_new_location = board.get_piece(new_x, new_y)
 
-            # checks for opposite color in occupied spot in order to capture
+            # check for opposite color in occupied spot in order to capture
             if self.get_color() != piece_in_new_location.get_color():
                 print('d')
                 piece_in_new_location.set_captured()
@@ -269,16 +270,17 @@ class King(ChessPiece):
 
 
 board = Board()
-print(board)
+#print(board)
 
 # Testing if moving works
 
 # seed data
 white_pawn = Pawn(2, 2, "White")
-board.get_white().append(white_pawn)
+black_pawn = Pawn(7, 3, "Black")
+board.get_black().append(black_pawn)
 black_knight = board.get_piece(1,0)
 
-print(board)
+#print(board)
 
 def test_movement(piece, coord, board, expected_value):
     valid_move = piece.is_valid_move(coord[0], coord[1], board)
@@ -302,26 +304,6 @@ test_coords = {(2, 2): True,
 for coord in test_coords:
     expected_value = test_coords[coord]
     print(str(coord) + ":", test_movement(black_knight, coord, board, expected_value))
-
-
-#### return all pieces that moved, and where they moved to    
-# old set of pieces pre-movement
-original = set([])
-for x in board.get_all_pieces():
-    original.add(x)
-
-# update move logic here
-black_pawn.move(0,7)
-black_pawn.promote(board, Queen)
-
-# new set of pieces post-movement
-new = set([])
-for x in board.get_all_pieces():
-    new.add(x)
-
-# returns the pieces that changed positions
-for o in original.difference(new): print(str(o) + " " + "original")
-for n in new.difference(original): print(str(n) + " " + "new")
 
 
     
