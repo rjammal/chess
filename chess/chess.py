@@ -47,38 +47,50 @@ class Board:
             print_string += str(piece) + '\n'
         return print_string
 
+    # return list of black pieces
     def get_black(self):
         return self.list_black
+    # return list of white pieces
     def get_white(self):
         return self.list_white
+    # return all pieces on the board
     def get_all_pieces(self):
         piece_list = []
         piece_list.extend(self.get_black())
         piece_list.extend(self.get_white())
         return piece_list
-    def get_piece(self, x, y):
+    # return the piece at a specified location
+    def get_piece(self, x, y):  
         for piece in self.get_all_pieces():
             if x == piece.get_x() and y == piece.get_y():
                 return piece
-
+    # remove piece from the board
     def remove_piece(self, piece):
         if piece.get_color() == "Black":
             self.list_black.remove(piece)
         elif piece.get_color() == "White":
             self.list_white.remove(piece)
+    # add piece to the board
     def add_piece(self, piece):
         if piece.get_color() == "Black":
             self.list_black.append(piece)
         elif piece.get_color() == "White":
             self.list_white.append(piece)
+
+    def board_move(self, piece, new_x, new_y):
+        if not self.is_empty(new_x, new_y):
+            self.get_piece(new_x, new_y).set_captured()
+        piece.move(new_x, new_y)
       
+
+    # returns True if a spot is empty, False if occupied  
     def is_empty(self, x, y):
         for piece in self.get_all_pieces():
             if x == piece.get_x() and y == piece.get_y():
                 return False
         return True 
 
-class ChessPiece:
+class ChessPiece():
 
     def __init__(self, x, y, color):
         self.captured = False
@@ -125,6 +137,8 @@ class Pawn(ChessPiece):
         self.enpassant = False
 
     def move(self, new_x, new_y):
+        if abs(self.get_y() - new_y) == 2:
+            self.enpassant = True
         super(Pawn, self).move(new_x, new_y)
         self.not_yet_moved = False
 
@@ -151,46 +165,35 @@ class Pawn(ChessPiece):
                 elif white:
                     valid_y = ((y - 1) == new_y or
                                (y - 2) == new_y)
-
-        
-        if board.is_empty(new_x, new_y):
-            same_x = x == new_x
-            if self.not_yet_moved:
-                if black:
-##                    # check if spot ahead is empty
-##                    if not board.is_empty(x, y + 1):
-##                        return False
-                    valid_y = ((y + 1) == new_y or
-                               (y + 2) == new_y)
-                elif white:
-                    valid_y = ((y - 1) == new_y or
-                               (y - 2) == new_y)
-                
             else:
                 if black:
-                    valid_y = y + 1 == new_y
+                    valid_y = (y + 1) == new_y
                 elif white:
-                    valid_y = y - 1 == new_y
-
-            return same_x and valid_y
-
+                    valid_y = (y - 1) == new_y
+            return valid_y
         else:
-            left_or_right_one = abs(new_x - x)
-            piece_in_new_location = board.get_piece(new_x, new_y)
-            new_location_piece_color = piece_in_new_location.get_color()
-            if black: 
-                one_row_ahead = new_y - y == 1
-                opposite_color_in_destination = new_location_piece_color == "White"
-            elif white:
-                one_row_ahead = y - new_y == 1
-                opposite_color_in_destination = new_location_piece_color == "Black"
+            # This is checking all capture scenarios.
+            
+            # Pawn cannot move more than 1 left or right
+            if abs(x - new_x) > 1:
+                return False
 
-            capture_piece = left_or_right_one and one_row_ahead and opposite_color_in_destination
+            if board.is_empty(new_x, new_y):
+                
+                # check for enpassant
+                if not board.is_empty(new_x, y): # check if there is an adjacent piece
+                    adjacent_piece = board.get_piece(new_x, y)
+                    if (adjacent_piece.get_color() != self.get_color() and
+                        adjacent_piece.enpassant):
+                        return True
 
-            if capture_piece:
-                piece_in_new_location.set_captured()
+                return False       
 
-            return capture_piece
+            else:
+                other_piece = board.get_piece(new_x, new_y)
+                return other_piece.get_color() != self.get_color()
+                    
+
 
     def in_promotion_space(self):
         if self.get_color() == "White":
@@ -211,7 +214,44 @@ class Pawn(ChessPiece):
             
 
 class Knight(ChessPiece):
-    pass # Cyrus
+
+    def __init__(self, x, y, color):
+        super(Knight, self).__init__(x, y, color)
+
+    def move(self, new_x, new_y):
+        super(Knight, self).move(new_x, new_y)
+
+    def is_valid_move(self, new_x, new_y, board):
+        # check if new location is on board
+        if not super(Knight, self).is_valid_move(new_x, new_y, board):
+            print('a')
+            return False
+
+        x = self.get_x()
+        y = self.get_y()
+        # checks for Knight 'L' move
+        if not ((abs(new_x - x) == 2 and abs(new_y - y) == 1) or \
+           (abs(new_x - x) == 1 and abs(new_y - y) == 2)):
+            print('b')
+            return False
+                           
+        elif board.is_empty(new_x, new_y):
+            print('c')
+            return True
+
+        else:
+            piece_in_new_location = board.get_piece(new_x, new_y)
+
+            # checks for opposite color in occupied spot in order to capture
+            if self.get_color() != piece_in_new_location.get_color():
+                print('d')
+                piece_in_new_location.set_captured()
+                return True
+            # if same color, cannot move into the same spot
+            else:
+                print('e')
+                return False
+
 
 class Rook(ChessPiece):
     pass # Cyrus
@@ -219,45 +259,9 @@ class Rook(ChessPiece):
 class Bishop(ChessPiece):
     pass # Rosemary
 
-class Queen(Bishop):
+class Queen(ChessPiece):
     pass # Rosemary
 
 class King(ChessPiece):
     pass # Cyrus
 
-
-board = Board()
-print(board)
-
-# Testing if moving works
-
-# seed data
-white_pawn = Pawn(2, 2, "White")
-board.get_white().append(white_pawn)
-black_pawn = board.get_piece(1, 1)
-
-
-def test_movement(piece, coord, board, expected_value):
-    valid_move = piece.is_valid_move(coord[0], coord[1], board)
-    if expected_value == valid_move:
-        return "\tPASS"
-    else:
-        return "\tFAIL"
-
-# dictionary where the spaces on the board map to whether or not my
-# pawn should be able to move there
-test_coords = {(1, 2): True,
-               (1, 3): True,
-               (1, 4): False,
-               (0, 2): False,
-               (2, 2): True,
-               (17, 23): False
-               }
-
-for coord in test_coords:
-    expected_value = test_coords[coord]
-    print(str(coord) + ":", test_movement(black_pawn, coord, board, expected_value))
-    
-black_pawn.move(0,7)
-black_pawn.promote(board, Queen)
-print(str(board))
