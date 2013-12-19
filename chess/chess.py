@@ -226,27 +226,33 @@ class Knight(ChessPiece):
     def is_valid_move(self, new_x, new_y, board):
         # check if new location is on board
         if not super(Knight, self).is_valid_move(new_x, new_y, board):
+            print('a')
             return False
 
         x = self.get_x()
         y = self.get_y()
-                             
-        if board.is_empty(new_x, new_y):
-            if abs(new_x - x) == 2 and abs(new_y - y) == 1:
-                print('a')
-                return True
-            elif abs(new_x - x) == 1 and abs(new_y - y) == 2:
-                print('b')
-                return True
-            else:
-                print('c')
-                return False
-        else:
-            print('d')
-# have to modify this as it does not account for spots occupied by other color
+        # checks for Knight 'L' move
+        if not ((abs(new_x - x) == 2 and abs(new_y - y) == 1) or \
+           (abs(new_x - x) == 1 and abs(new_y - y) == 2)):
+            print('b')
             return False
-        
+                           
+        elif board.is_empty(new_x, new_y):
+            print('c')
+            return True
 
+        else:
+            piece_in_new_location = board.get_piece(new_x, new_y)
+
+            # checks for opposite color in occupied spot in order to capture
+            if self.get_color() != piece_in_new_location.get_color():
+                print('d')
+                piece_in_new_location.set_captured()
+                return True
+            # if same color, cannot move into the same spot
+            else:
+                print('e')
+                return False
 
 
 class Rook(ChessPiece):
@@ -268,11 +274,11 @@ print(board)
 # Testing if moving works
 
 # seed data
-#white_pawn = Pawn(2, 2, "White")
-#board.get_white().append(white_pawn)
-black_pawn = board.get_piece(1, 1)
+white_pawn = Pawn(2, 2, "White")
+board.get_white().append(white_pawn)
 black_knight = board.get_piece(1,0)
 
+print(board)
 
 def test_movement(piece, coord, board, expected_value):
     valid_move = piece.is_valid_move(coord[0], coord[1], board)
@@ -289,7 +295,8 @@ test_coords = {(2, 2): True,
                (2, 1): False,
                (-1, 1): False,
                (1, 1): False,
-               (17, 23): False
+               (17, 23): False,
+               (2, 2): True
                }
 
 for coord in test_coords:
