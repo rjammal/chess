@@ -1,10 +1,11 @@
+# Testing if Knight movement works
 import chess
 from chess import *
 
+board = Board()
 
-
+# seed data
 black_knight = board.get_piece(1,0)
-
 
 def test_movement(piece, coord, board, expected_value):
     valid_move = piece.is_valid_move(coord[0], coord[1], board)
@@ -14,7 +15,7 @@ def test_movement(piece, coord, board, expected_value):
         return "\tFAIL"
 
 # dictionary where the spaces on the board map to whether or not my
-# knight should be able to move there
+# Knight should be able to move there
 test_coords = {(2, 2): True,
                (3, 1): False,
                (0, 2): True,
