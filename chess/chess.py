@@ -77,11 +77,34 @@ class Board:
         elif piece.get_color() == "White":
             self.list_white.append(piece)
 
+    # Call this function to move pieces on the board
     def board_move(self, piece, new_x, new_y):
-        if not self.is_empty(new_x, new_y):
-            self.get_piece(new_x, new_y).set_captured()
-        piece.move(new_x, new_y)
-      
+        if piece.is_valid_move(new_x, new_y, self): 
+            self.unset_enpassant(piece)
+            if not self.is_empty(new_x, new_y):
+                self.get_piece(new_x, new_y).set_captured()
+            piece.move(new_x, new_y)
+
+    # returns all pawns of the specified color
+    def get_pawns_of_color(self, color):
+        pawn_list = []
+        for piece in self.get_all_pieces():
+            piece_color = piece.get_color()
+            if isinstance(piece, Pawn) and color == piece_color:
+                pawn_list.append(piece)
+        return pawn_list
+          # This is how you would do it in a list comprehension.
+          # List comprehensions are dumb X<
+##        return [piece for piece in self.get_all_pieces()
+##                if isinstance(piece, Pawn) and color == piece.get_color()]
+
+    # Sets all pawns with the same color as the input piece to be out of
+    # an enpassant state
+    def unset_enpassant(self, piece):
+        piece_color = piece.get_color()
+        for piece in self.get_pawns_of_color(piece_color):
+            piece.enpassant = False
+            
 
     # returns True if a spot is empty, False if occupied  
     def is_empty(self, x, y):
@@ -241,7 +264,7 @@ class Knight(ChessPiece):
             return True
         # if new location is already taken
         else:
-            piece_in_new_location = board.get_piece(new_x, new_y)
+            piece_in_new_location = board.get_pieces(new_x, new_y)
 
             # check for opposite color in occupied spot in order to capture
             if self.get_color() != piece_in_new_location.get_color():
