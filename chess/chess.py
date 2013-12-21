@@ -264,7 +264,7 @@ class Knight(ChessPiece):
             return True
         # if new location is already taken
         else:
-            piece_in_new_location = board.get_pieces(new_x, new_y)
+            piece_in_new_location = board.get_piece(new_x, new_y)
 
             # check for opposite color in occupied spot in order to capture
             if self.get_color() != piece_in_new_location.get_color():
