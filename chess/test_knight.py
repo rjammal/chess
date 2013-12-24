@@ -30,7 +30,8 @@ for coord in test_coords:
     expected_value = test_coords[coord]
     print(str(coord) + ":", test_movement(black_knight, coord, board, expected_value))
 
-
+black_knight.move(2,2)
 print(board)
+print(black_knight)
 
     

@@ -247,7 +247,6 @@ class Knight(ChessPiece):
 
         # check if new location is on board
         if not super(Knight, self).is_valid_move(new_x, new_y, board):
-            print('a')
             return False
 
         x = self.get_x()
@@ -256,11 +255,9 @@ class Knight(ChessPiece):
         # check for Knight 'L' move
         if not ((abs(new_x - x) == 2 and abs(new_y - y) == 1) or \
            (abs(new_x - x) == 1 and abs(new_y - y) == 2)):
-            print('b')
             return False
         # check if new location is open                   
         elif board.is_empty(new_x, new_y):
-            print('c')
             return True
         # if new location is already taken
         else:
@@ -268,12 +265,10 @@ class Knight(ChessPiece):
 
             # check for opposite color in occupied spot in order to capture
             if self.get_color() != piece_in_new_location.get_color():
-                print('d')
                 piece_in_new_location.set_captured()
                 return True
             # if same color, cannot move into the same spot
             else:
-                print('e')
                 return False
 
 
