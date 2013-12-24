@@ -145,12 +145,42 @@ class ChessPiece():
         self.set_x(new_x)
         self.set_y(new_y)
 
+    # checks if new location is different, on the board, and (empty or occupied by the opposite color)
     def is_valid_move(self, new_x, new_y, board):
         x_on_board = 0 <= new_x < BOARD_SIZE
         y_on_board = 0 <= new_y < BOARD_SIZE
-        return x_on_board and y_on_board
+        x = self.get_x()
+        y = self.get_y()
+        
+        # check if new location is on the board
+        if x_on_board and y_on_board:
 
-    
+            # check if there is a change in position
+            if new_x == x and new_y == y:
+                return False
+
+            # check if new location is open
+            elif board.is_empty(new_x, new_y):
+                return True
+
+            # if new location is already taken
+            else:
+                piece_in_new_location = board.get_piece(new_x, new_y)
+
+                # check for opposite color in occupied spot in order to capture
+                if self.get_color() != piece_in_new_location.get_color():
+                    piece_in_new_location.set_captured()
+                    return True
+
+                # if same color, cannot move into the same spot
+                else:
+                    return False
+                
+        # exit immediately if not on board    
+        else:
+            return False
+
+            
 
 class Pawn(ChessPiece):
 
@@ -245,7 +275,7 @@ class Knight(ChessPiece):
 
     def is_valid_move(self, new_x, new_y, board):
 
-        # check if new location is on board
+        # check if new location is on board, empty and/or occupied by the opposite color
         if not super(Knight, self).is_valid_move(new_x, new_y, board):
             return False
 
@@ -253,27 +283,66 @@ class Knight(ChessPiece):
         y = self.get_y()
 
         # check for Knight 'L' move
-        if not ((abs(new_x - x) == 2 and abs(new_y - y) == 1) or \
+        if ((abs(new_x - x) == 2 and abs(new_y - y) == 1) or \
            (abs(new_x - x) == 1 and abs(new_y - y) == 2)):
-            return False
-        # check if new location is open                   
-        elif board.is_empty(new_x, new_y):
             return True
-        # if new location is already taken
         else:
-            piece_in_new_location = board.get_piece(new_x, new_y)
+            return False
 
-            # check for opposite color in occupied spot in order to capture
-            if self.get_color() != piece_in_new_location.get_color():
-                piece_in_new_location.set_captured()
-                return True
-            # if same color, cannot move into the same spot
-            else:
-                return False
 
 
 class Rook(ChessPiece):
-    pass # Cyrus
+
+    def __init__(self, x, y, color):
+        super(Rook, self).__init__(x, y, color)
+        self.not_yet_moved = True
+
+    def move(self, new_x, new_y):
+        super(Rook, self).move(new_x, new_y)
+        self.not_yet_moved = False
+
+    def is_valid_move(self, new_x, new_y, board):
+        
+        # check if new location is on board, empty and/or occupied by the opposite color
+        if not super(Rook, self).is_valid_move(new_x, new_y, board):
+            return False
+
+        x = self.get_x()
+        y = self.get_y()
+
+        # check if the movement is horizontal or veritical (is_valid_move guarantees that there is a change of position)
+        if abs(new_x - x) == 0 or abs(new_y - y) == 0:
+
+            block = False
+
+            # check vertical path
+            if abs(new_x - x) == 0:
+                for piece in board.get_all_pieces():
+                    # check if any pieces are in the same column
+                    if piece.get_x() == x:
+                        # check if same-column piece is in the range of Rook movement
+                        if piece.get_y() > min(y, new_y) and piece.get_y() < max(y, new_y):
+                            block = True
+
+            # check horizontal path
+            elif abs(new_y - y) == 0:
+                for piece in board.get_all_pieces():
+                    # check if any pieces are in the same row
+                    if piece.get_y() == y:
+                        # check if same-row piece is in the range of Rook movement
+                        if piece.get_x() > min(x, new_x) and piece.get_x() < max(x, new_x):
+                            block = True
+
+            # return True if not blocked, False if blocked
+            return not block
+                                                          
+        # exit if not horizontal/vertical    
+        else:
+            return False
+
+        
+        
+        
 
 class Bishop(ChessPiece):
     pass # Rosemary
