@@ -169,7 +169,13 @@ class ChessPiece():
 
                 # check for opposite color in occupied spot in order to capture
                 if self.get_color() != piece_in_new_location.get_color():
-                    piece_in_new_location.set_captured()
+                    ######
+                    # one chess piece should probably not edit another chess 
+                    # piece's status - it makes it more clear where you need
+                    # to debug when you see strange behavior
+                    # we can handle the capturing in board_move
+                    ###### RJ
+                    #piece_in_new_location.set_captured()
                     return True
 
                 # if same color, cannot move into the same spot
@@ -353,3 +359,70 @@ class Queen(ChessPiece):
 class King(ChessPiece):
     pass # Cyrus
 
+
+# helper function to determine distance moved horizontally or vertically
+# useful for queen and rook
+def movement_path_hv(piece, board):
+    x = piece.get_x()
+    y = piece.get_y()
+
+    # list containing tuples of all valid squares
+    valid_squares = []
+
+    # did you know you can define a function within a function? Crazy! 
+    def add_spots_horizontal(y, list_of_x_coords):
+        new_spots = []
+        for pos in list_of_x_coords:
+            if board.is_empty(pos, y):
+                new_spots.append((pos, y))
+            elif board.get_piece(pos, y).get_color() != piece.get_color():
+                new_spots.append((pos, y))
+                break
+            else:
+                break
+
+    def add_spots_vertical(x, list_of_y_coords):
+        new_spots = []
+        for pos in list_of_y_coords:
+            if board.is_empty(x, pos):
+                new_spots.append((x, pos))
+            elif board.get_piece(x, pos).get_color() != piece.get_color():
+                new_spots.append((x, pos))
+                break
+            else:
+                break
+
+    def spaces_above_or_right(x_or_y):
+        return range(x_or_y, BOARD_SIZE)
+    def spaces_below_or_left(x_or_y):
+        return range(x_or_y, -1, -1)
+
+    x_values_right = spaces_above_or_right(x)
+    x_values_left = spaces_below_or_left(x)
+    y_values_above = spaces_above_or_right(y)
+    y_values_below = spaces_below_or_left(y)
+    
+    # need to call this twice for each dimension since I break out
+    # of the function upon hitting another piece
+    # horizontally - to right
+    valid_squares.extend(add_spots_horizontal(y, x_values_right))
+    # horizontally - to left
+    valid_squares.extend(add_spots_horizontal(y, x_values_left))
+    # vertically - up
+    valid_squares.extend(add_spots_vertical(x, y_values_up))
+    # vertically - down
+    valid_squares.extend(add_spots_vertical(x, x_values_down))
+
+    return valid_squares
+    
+
+        
+
+
+
+
+
+
+
+    
+    
