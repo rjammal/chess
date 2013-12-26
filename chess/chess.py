@@ -351,10 +351,22 @@ class Rook(ChessPiece):
         
 
 class Bishop(ChessPiece):
-    pass # Rosemary
+
+    def is_valid_move(self, new_x, new_y, board):
+        # check if new location is on board, empty and/or occupied by the opposite color
+        if not super(Bishop, self).is_valid_move(new_x, new_y, board):
+            return False
+        return (new_x, new_y) in movement_path_diagonal(self, board)
 
 class Queen(ChessPiece):
-    pass # Rosemary
+
+    def is_valid_move(self, new_x, new_y, board):
+        # check if new location is on board, empty and/or occupied by the opposite color
+        if not super(Queen, self).is_valid_move(new_x, new_y, board):
+            return False
+        valid_moves = movement_path_hv(self, board)
+        valid_moves.extend(movement_path_diagonal(self, board))
+        return (new_x, new_y) in valid_moves
 
 class King(ChessPiece):
     pass # Cyrus
@@ -471,7 +483,7 @@ def movement_path_diagonal(piece, board):
             break
 
     # bottom left
-    x_left = x + 1
+    x_left = x - 1
     y_below = y - 1
     while x_left >= LEFT_COLUMN and y_below >= FRONT_ROW:
         if board.is_empty(x_left, y_below):
