@@ -418,7 +418,74 @@ def movement_path_hv(piece, board):
     return valid_squares
     
 
+# helper function to determine distance moved diagonally
+# useful for queen and bishop
+def movement_path_diagonal(piece, board):
+    x = piece.get_x()
+    y = piece.get_y()
+
+    # list containing tuples of all valid squares
+    valid_squares = []
         
+
+    # top right
+    x_right = x + 1
+    y_above = y + 1
+    while x_right < BOARD_SIZE and y_above < BOARD_SIZE:
+        if board.is_empty(x_right, y_above):
+            valid_squares.append((x_right, y_above))
+            x_right += 1
+            y_above += 1
+        elif board.get_piece(x_right, y_above).get_color() != piece.get_color():
+            valid_squares.append((x_right, y_above))
+            break
+        else:
+            break
+
+    # bottom right
+    x_right = x + 1
+    y_below = y - 1
+    while x_right < BOARD_SIZE and y_below >= FRONT_ROW:
+        if board.is_empty(x_right, y_below):
+            valid_squares.append((x_right, y_below))
+            x_right += 1
+            y_below -= 1
+        elif board.get_piece(x_right, y_below).get_color() != piece.get_color():
+            valid_squares.append((x_right, y_below))
+            break
+        else:
+            break
+
+    # top left
+    x_left = x - 1
+    y_above = y + 1
+    while x_left >= LEFT_COLUMN and y_above < BOARD_SIZE:
+        if board.is_empty(x_left, y_above):
+            valid_squares.append((x_left, y_above))
+            x_left -= 1
+            y_above += 1
+        elif board.get_piece(x_left, y_above).get_color() != piece.get_color():
+            valid_squares.append((x_left, y_above))
+            break
+        else:
+            break
+
+    # bottom left
+    x_left = x + 1
+    y_below = y - 1
+    while x_left >= LEFT_COLUMN and y_below >= FRONT_ROW:
+        if board.is_empty(x_left, y_below):
+            valid_squares.append((x_left, y_below))
+            x_left -= 1
+            y_below -= 1
+        elif board.get_piece(x_left, y_below).get_color() != piece.get_color():
+            valid_squares.append((x_left, y_below))
+            break
+        else:
+            break
+
+
+    return valid_squares        
 
 
 
