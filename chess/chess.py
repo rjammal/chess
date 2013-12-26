@@ -380,6 +380,7 @@ def movement_path_hv(piece, board):
                 break
             else:
                 break
+        return new_spots
 
     def add_spots_vertical(x, list_of_y_coords):
         new_spots = []
@@ -391,11 +392,12 @@ def movement_path_hv(piece, board):
                 break
             else:
                 break
+        return new_spots
 
     def spaces_above_or_right(x_or_y):
-        return range(x_or_y, BOARD_SIZE)
+        return range(x_or_y + 1, BOARD_SIZE)
     def spaces_below_or_left(x_or_y):
-        return range(x_or_y, -1, -1)
+        return range(x_or_y - 1, -1, -1)
 
     x_values_right = spaces_above_or_right(x)
     x_values_left = spaces_below_or_left(x)
@@ -409,9 +411,9 @@ def movement_path_hv(piece, board):
     # horizontally - to left
     valid_squares.extend(add_spots_horizontal(y, x_values_left))
     # vertically - up
-    valid_squares.extend(add_spots_vertical(x, y_values_up))
+    valid_squares.extend(add_spots_vertical(x, y_values_above))
     # vertically - down
-    valid_squares.extend(add_spots_vertical(x, x_values_down))
+    valid_squares.extend(add_spots_vertical(x, y_values_below))
 
     return valid_squares
     
