@@ -79,11 +79,23 @@ class Board:
 
     # Call this function to move pieces on the board
     def board_move(self, piece, new_x, new_y):
-        if piece.is_valid_move(new_x, new_y, self): 
-            self.unset_enpassant(piece)
-            if not self.is_empty(new_x, new_y):
-                self.get_piece(new_x, new_y).set_captured()
+        color = self.get_color()
+        king = 0#get king of color
+        x = piece.get_x()
+        y = piece.get_y()
+        
+        if piece.is_valid_move(new_x, new_y, self):
             piece.move(new_x, new_y)
+            if king.in_check():
+                piece.move(x, y)
+                print("King is in check!")
+            else:
+                self.unset_enpassant(piece)
+                if not self.is_empty(new_x, new_y):
+                    self.get_piece(new_x, new_y).set_captured()
+                piece.move(new_x, new_y)
+
+                
 
     # returns all pawns of the specified color
     def get_pawns_of_color(self, color):
@@ -169,13 +181,6 @@ class ChessPiece():
 
                 # check for opposite color in occupied spot in order to capture
                 if self.get_color() != piece_in_new_location.get_color():
-                    ######
-                    # one chess piece should probably not edit another chess 
-                    # piece's status - it makes it more clear where you need
-                    # to debug when you see strange behavior
-                    # we can handle the capturing in board_move
-                    ###### RJ
-                    #piece_in_new_location.set_captured()
                     return True
 
                 # if same color, cannot move into the same spot
