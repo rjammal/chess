@@ -79,11 +79,23 @@ class Board:
 
     # Call this function to move pieces on the board
     def board_move(self, piece, new_x, new_y):
-        if piece.is_valid_move(new_x, new_y, self): 
-            self.unset_enpassant(piece)
-            if not self.is_empty(new_x, new_y):
-                self.get_piece(new_x, new_y).set_captured()
+        color = self.get_color()
+        king = 0#get king of color
+        x = piece.get_x()
+        y = piece.get_y()
+        
+        if piece.is_valid_move(new_x, new_y, self):
             piece.move(new_x, new_y)
+            if king.in_check():
+                piece.move(x, y)
+                print("King is in check!")
+            else:
+                self.unset_enpassant(piece)
+                if not self.is_empty(new_x, new_y):
+                    self.get_piece(new_x, new_y).set_captured()
+                piece.move(new_x, new_y)
+
+                
 
     # returns all pawns of the specified color
     def get_pawns_of_color(self, color):
@@ -145,12 +157,41 @@ class ChessPiece():
         self.set_x(new_x)
         self.set_y(new_y)
 
+    # checks if new location is different, on the board, and (empty or occupied by the opposite color)
     def is_valid_move(self, new_x, new_y, board):
         x_on_board = 0 <= new_x < BOARD_SIZE
         y_on_board = 0 <= new_y < BOARD_SIZE
-        return x_on_board and y_on_board
+        x = self.get_x()
+        y = self.get_y()
+        
+        # check if new location is on the board
+        if x_on_board and y_on_board:
 
-    
+            # check if there is a change in position
+            if new_x == x and new_y == y:
+                return False
+
+            # check if new location is open
+            elif board.is_empty(new_x, new_y):
+                return True
+
+            # if new location is already taken
+            else:
+                piece_in_new_location = board.get_piece(new_x, new_y)
+
+                # check for opposite color in occupied spot in order to capture
+                if self.get_color() != piece_in_new_location.get_color():
+                    return True
+
+                # if same color, cannot move into the same spot
+                else:
+                    return False
+                
+        # exit immediately if not on board    
+        else:
+            return False
+
+            
 
 class Pawn(ChessPiece):
 
@@ -245,47 +286,229 @@ class Knight(ChessPiece):
 
     def is_valid_move(self, new_x, new_y, board):
 
-        # check if new location is on board
+        # check if new location is on board, empty and/or occupied by the opposite color
         if not super(Knight, self).is_valid_move(new_x, new_y, board):
-            print('a')
             return False
 
         x = self.get_x()
         y = self.get_y()
 
         # check for Knight 'L' move
-        if not ((abs(new_x - x) == 2 and abs(new_y - y) == 1) or \
+        if ((abs(new_x - x) == 2 and abs(new_y - y) == 1) or \
            (abs(new_x - x) == 1 and abs(new_y - y) == 2)):
-            print('b')
-            return False
-        # check if new location is open                   
-        elif board.is_empty(new_x, new_y):
-            print('c')
             return True
-        # if new location is already taken
         else:
-            piece_in_new_location = board.get_piece(new_x, new_y)
+            return False
 
-            # check for opposite color in occupied spot in order to capture
-            if self.get_color() != piece_in_new_location.get_color():
-                print('d')
-                piece_in_new_location.set_captured()
-                return True
-            # if same color, cannot move into the same spot
-            else:
-                print('e')
-                return False
 
 
 class Rook(ChessPiece):
-    pass # Cyrus
+
+    def __init__(self, x, y, color):
+        super(Rook, self).__init__(x, y, color)
+        self.not_yet_moved = True
+
+    def move(self, new_x, new_y):
+        super(Rook, self).move(new_x, new_y)
+        self.not_yet_moved = False
+
+    def is_valid_move(self, new_x, new_y, board):
+        
+        # check if new location is on board, empty and/or occupied by the opposite color
+        if not super(Rook, self).is_valid_move(new_x, new_y, board):
+            return False
+
+        x = self.get_x()
+        y = self.get_y()
+
+        # check if the movement is horizontal or veritical (is_valid_move guarantees that there is a change of position)
+        if abs(new_x - x) == 0 or abs(new_y - y) == 0:
+
+            block = False
+
+            # check vertical path
+            if abs(new_x - x) == 0:
+                for piece in board.get_all_pieces():
+                    # check if any pieces are in the same column
+                    if piece.get_x() == x:
+                        # check if same-column piece is in the range of Rook movement
+                        if piece.get_y() > min(y, new_y) and piece.get_y() < max(y, new_y):
+                            block = True
+
+            # check horizontal path
+            elif abs(new_y - y) == 0:
+                for piece in board.get_all_pieces():
+                    # check if any pieces are in the same row
+                    if piece.get_y() == y:
+                        # check if same-row piece is in the range of Rook movement
+                        if piece.get_x() > min(x, new_x) and piece.get_x() < max(x, new_x):
+                            block = True
+
+            # return True if not blocked, False if blocked
+            return not block
+                                                          
+        # exit if not horizontal/vertical    
+        else:
+            return False
+
+        
+        
+        
 
 class Bishop(ChessPiece):
-    pass # Rosemary
+
+    def is_valid_move(self, new_x, new_y, board):
+        # check if new location is on board, empty and/or occupied by the opposite color
+        if not super(Bishop, self).is_valid_move(new_x, new_y, board):
+            return False
+        return (new_x, new_y) in movement_path_diagonal(self, board)
 
 class Queen(ChessPiece):
-    pass # Rosemary
+
+    def is_valid_move(self, new_x, new_y, board):
+        # check if new location is on board, empty and/or occupied by the opposite color
+        if not super(Queen, self).is_valid_move(new_x, new_y, board):
+            return False
+        valid_moves = movement_path_hv(self, board)
+        valid_moves.extend(movement_path_diagonal(self, board))
+        return (new_x, new_y) in valid_moves
 
 class King(ChessPiece):
     pass # Cyrus
 
+
+# helper function to determine distance moved horizontally or vertically
+# useful for queen and rook
+def movement_path_hv(piece, board):
+    x = piece.get_x()
+    y = piece.get_y()
+
+    # list containing tuples of all valid squares
+    valid_squares = []
+
+    # did you know you can define a function within a function? Crazy! 
+    def add_spots_horizontal(y, list_of_x_coords):
+        new_spots = []
+        for pos in list_of_x_coords:
+            if board.is_empty(pos, y):
+                new_spots.append((pos, y))
+            elif board.get_piece(pos, y).get_color() != piece.get_color():
+                new_spots.append((pos, y))
+                break
+            else:
+                break
+        return new_spots
+
+    def add_spots_vertical(x, list_of_y_coords):
+        new_spots = []
+        for pos in list_of_y_coords:
+            if board.is_empty(x, pos):
+                new_spots.append((x, pos))
+            elif board.get_piece(x, pos).get_color() != piece.get_color():
+                new_spots.append((x, pos))
+                break
+            else:
+                break
+        return new_spots
+
+    def spaces_above_or_right(x_or_y):
+        return range(x_or_y + 1, BOARD_SIZE)
+    def spaces_below_or_left(x_or_y):
+        return range(x_or_y - 1, -1, -1)
+
+    x_values_right = spaces_above_or_right(x)
+    x_values_left = spaces_below_or_left(x)
+    y_values_above = spaces_above_or_right(y)
+    y_values_below = spaces_below_or_left(y)
+    
+    # need to call this twice for each dimension since I break out
+    # of the function upon hitting another piece
+    # horizontally - to right
+    valid_squares.extend(add_spots_horizontal(y, x_values_right))
+    # horizontally - to left
+    valid_squares.extend(add_spots_horizontal(y, x_values_left))
+    # vertically - up
+    valid_squares.extend(add_spots_vertical(x, y_values_above))
+    # vertically - down
+    valid_squares.extend(add_spots_vertical(x, y_values_below))
+
+    return valid_squares
+    
+
+# helper function to determine distance moved diagonally
+# useful for queen and bishop
+def movement_path_diagonal(piece, board):
+    x = piece.get_x()
+    y = piece.get_y()
+
+    # list containing tuples of all valid squares
+    valid_squares = []
+        
+
+    # top right
+    x_right = x + 1
+    y_above = y + 1
+    while x_right < BOARD_SIZE and y_above < BOARD_SIZE:
+        if board.is_empty(x_right, y_above):
+            valid_squares.append((x_right, y_above))
+            x_right += 1
+            y_above += 1
+        elif board.get_piece(x_right, y_above).get_color() != piece.get_color():
+            valid_squares.append((x_right, y_above))
+            break
+        else:
+            break
+
+    # bottom right
+    x_right = x + 1
+    y_below = y - 1
+    while x_right < BOARD_SIZE and y_below >= FRONT_ROW:
+        if board.is_empty(x_right, y_below):
+            valid_squares.append((x_right, y_below))
+            x_right += 1
+            y_below -= 1
+        elif board.get_piece(x_right, y_below).get_color() != piece.get_color():
+            valid_squares.append((x_right, y_below))
+            break
+        else:
+            break
+
+    # top left
+    x_left = x - 1
+    y_above = y + 1
+    while x_left >= LEFT_COLUMN and y_above < BOARD_SIZE:
+        if board.is_empty(x_left, y_above):
+            valid_squares.append((x_left, y_above))
+            x_left -= 1
+            y_above += 1
+        elif board.get_piece(x_left, y_above).get_color() != piece.get_color():
+            valid_squares.append((x_left, y_above))
+            break
+        else:
+            break
+
+    # bottom left
+    x_left = x - 1
+    y_below = y - 1
+    while x_left >= LEFT_COLUMN and y_below >= FRONT_ROW:
+        if board.is_empty(x_left, y_below):
+            valid_squares.append((x_left, y_below))
+            x_left -= 1
+            y_below -= 1
+        elif board.get_piece(x_left, y_below).get_color() != piece.get_color():
+            valid_squares.append((x_left, y_below))
+            break
+        else:
+            break
+
+
+    return valid_squares        
+
+
+
+
+
+
+
+    
+    
