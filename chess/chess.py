@@ -1,11 +1,14 @@
 # Making a chess game
 
+import tkinter as tk
+
 BOARD_SIZE = 8
 
 FRONT_ROW = 0
 BACK_ROW = 7
 LEFT_COLUMN = 0
 RIGHT_COLUMN = 7
+
 
 class Board:
 
@@ -191,7 +194,9 @@ class ChessPiece():
         else:
             return False
 
-            
+    def get_image(self):
+        return tk.PhotoImage(file = "chess_pieces.gif")
+           
 
 class Pawn(ChessPiece):
 
@@ -199,6 +204,12 @@ class Pawn(ChessPiece):
         super(Pawn, self).__init__(x, y, color)
         self.not_yet_moved = True
         self.enpassant = False
+
+    def get_image(self):
+        if self.color == "Black": 
+            return tk.PhotoImage(file = "black_pawn.gif")
+        else:
+            return tk.PhotoImage(file = "white_pawn.gif")
 
     def move(self, new_x, new_y):
         if abs(self.get_y() - new_y) == 2:
@@ -281,6 +292,12 @@ class Knight(ChessPiece):
     def __init__(self, x, y, color):
         super(Knight, self).__init__(x, y, color)
 
+    def get_image(self):
+        if self.color == "Black": 
+            return tk.PhotoImage(file = "black_knight.gif")
+        else:
+            return tk.PhotoImage(file = "white_knight.gif")
+
     def move(self, new_x, new_y):
         super(Knight, self).move(new_x, new_y)
 
@@ -307,6 +324,12 @@ class Rook(ChessPiece):
     def __init__(self, x, y, color):
         super(Rook, self).__init__(x, y, color)
         self.not_yet_moved = True
+
+    def get_image(self):
+        if self.color == "Black": 
+            return tk.PhotoImage(file = "black_rook.gif")
+        else:
+            return tk.PhotoImage(file = "white_rook.gif")
 
     def move(self, new_x, new_y):
         super(Rook, self).move(new_x, new_y)
@@ -357,6 +380,12 @@ class Rook(ChessPiece):
 
 class Bishop(ChessPiece):
 
+    def get_image(self):
+        if self.color == "Black": 
+            return tk.PhotoImage(file = "black_bishop.gif")
+        else:
+            return tk.PhotoImage(file = "white_bishop.gif")
+
     def is_valid_move(self, new_x, new_y, board):
         # check if new location is on board, empty and/or occupied by the opposite color
         if not super(Bishop, self).is_valid_move(new_x, new_y, board):
@@ -364,6 +393,12 @@ class Bishop(ChessPiece):
         return (new_x, new_y) in movement_path_diagonal(self, board)
 
 class Queen(ChessPiece):
+
+    def get_image(self):
+        if self.color == "Black": 
+            return tk.PhotoImage(file = "black_queen.gif")
+        else:
+            return tk.PhotoImage(file = "white_queen.gif")
 
     def is_valid_move(self, new_x, new_y, board):
         # check if new location is on board, empty and/or occupied by the opposite color
@@ -374,6 +409,13 @@ class Queen(ChessPiece):
         return (new_x, new_y) in valid_moves
 
 class King(ChessPiece):
+
+    def get_image(self):
+        if self.color == "Black": 
+            return tk.PhotoImage(file = "black_king.gif")
+        else:
+            return tk.PhotoImage(file = "white_king.gif")
+    
     pass # Cyrus
 
 

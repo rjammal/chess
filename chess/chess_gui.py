@@ -13,7 +13,12 @@ class ChessGUI(tk.Frame):
         self.grid()
         self.canvas = tk.Canvas(self, height = HEIGHT, width = WIDTH)
         self.canvas.grid()
+        self.board = chess.Board()
         self.draw_board()
+        self.draw_pieces()
+
+    def get_board(self):
+        return self.board
 
     def draw_board(self):
 
@@ -29,6 +34,19 @@ class ChessGUI(tk.Frame):
                                            column * SQUARE_SIZE, (row + 1) * SQUARE_SIZE,
                                            outline = color,
                                            fill = color)
+
+    def draw_pieces(self):
+
+        board = self.get_board()
+     
+        for piece in board.get_all_pieces():
+            gif = piece.get_image()
+            x = (piece.get_x() + .5) * SQUARE_SIZE
+            y = (piece.get_y() + .5) * SQUARE_SIZE
+
+            self.canvas.create_image(x, y, image = gif)
+            
+                
 
 
 chess_gui = ChessGUI()
