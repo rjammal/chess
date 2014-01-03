@@ -1,7 +1,7 @@
 import tkinter as tk
 import chess
 
-SQUARE_SIZE = 50
+SQUARE_SIZE = 100
 HEIGHT = SQUARE_SIZE * chess.BOARD_SIZE
 WIDTH = SQUARE_SIZE * chess.BOARD_SIZE
 
@@ -41,10 +41,10 @@ class ChessGUI(tk.Frame):
      
         for piece in board.get_all_pieces():
             gif = piece.get_image()
-            x = (piece.get_x() + .5) * SQUARE_SIZE
-            y = (piece.get_y() + .5) * SQUARE_SIZE
+            x = int((piece.get_x() + .5) * SQUARE_SIZE)
+            y = int((piece.get_y() + .5) * SQUARE_SIZE)
 
-            self.canvas.create_image(x, y, image = gif)
+            self.canvas.create_image(x, HEIGHT - y, image = gif)
             
                 
 

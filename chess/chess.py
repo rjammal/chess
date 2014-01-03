@@ -137,6 +137,7 @@ class ChessPiece():
         self.x = x
         self.y = y
         self.color = color
+        self.image = None
 
     def __str__(self):
         return (self.get_color() + " " + str(self.__class__.__name__) +
@@ -148,6 +149,9 @@ class ChessPiece():
         return self.y
     def get_color(self):
         return self.color
+    def get_image(self):
+        return self.image
+    
 
     def set_x(self, x):
         self.x = x
@@ -193,9 +197,6 @@ class ChessPiece():
         # exit immediately if not on board    
         else:
             return False
-
-    def get_image(self):
-        return tk.PhotoImage(file = "chess_pieces.gif")
            
 
 class Pawn(ChessPiece):
@@ -204,12 +205,11 @@ class Pawn(ChessPiece):
         super(Pawn, self).__init__(x, y, color)
         self.not_yet_moved = True
         self.enpassant = False
-
-    def get_image(self):
-        if self.color == "Black": 
-            return tk.PhotoImage(file = "black_pawn.gif")
+        if color == "Black": 
+            self.image = tk.PhotoImage(file = "black_pawn.gif")
         else:
-            return tk.PhotoImage(file = "white_pawn.gif")
+            self.image = tk.PhotoImage(file = "white_pawn.gif")
+
 
     def move(self, new_x, new_y):
         if abs(self.get_y() - new_y) == 2:
@@ -291,12 +291,11 @@ class Knight(ChessPiece):
 
     def __init__(self, x, y, color):
         super(Knight, self).__init__(x, y, color)
-
-    def get_image(self):
-        if self.color == "Black": 
-            return tk.PhotoImage(file = "black_knight.gif")
+        if color == "Black": 
+            self.image = tk.PhotoImage(file = "black_knight.gif")
         else:
-            return tk.PhotoImage(file = "white_knight.gif")
+            self.image = tk.PhotoImage(file = "white_knight.gif")
+
 
     def move(self, new_x, new_y):
         super(Knight, self).move(new_x, new_y)
@@ -324,12 +323,10 @@ class Rook(ChessPiece):
     def __init__(self, x, y, color):
         super(Rook, self).__init__(x, y, color)
         self.not_yet_moved = True
-
-    def get_image(self):
-        if self.color == "Black": 
-            return tk.PhotoImage(file = "black_rook.gif")
+        if color == "Black": 
+            self.image = tk.PhotoImage(file = "black_rook.gif")
         else:
-            return tk.PhotoImage(file = "white_rook.gif")
+            self.image = tk.PhotoImage(file = "white_rook.gif")
 
     def move(self, new_x, new_y):
         super(Rook, self).move(new_x, new_y)
@@ -380,11 +377,14 @@ class Rook(ChessPiece):
 
 class Bishop(ChessPiece):
 
-    def get_image(self):
-        if self.color == "Black": 
-            return tk.PhotoImage(file = "black_bishop.gif")
+    def __init__(self, x, y, color):
+
+        super(Bishop, self).__init__(x, y, color)
+        if color == "Black": 
+            self.image = tk.PhotoImage(file = "black_bishop.gif")
         else:
-            return tk.PhotoImage(file = "white_bishop.gif")
+            self.image = tk.PhotoImage(file = "white_bishop.gif")
+
 
     def is_valid_move(self, new_x, new_y, board):
         # check if new location is on board, empty and/or occupied by the opposite color
@@ -394,11 +394,13 @@ class Bishop(ChessPiece):
 
 class Queen(ChessPiece):
 
-    def get_image(self):
-        if self.color == "Black": 
-            return tk.PhotoImage(file = "black_queen.gif")
+    def __init__(self, x, y, color):
+        super(Queen, self).__init__(x, y, color)
+        if color == "Black": 
+            self.image = tk.PhotoImage(file = "black_queen.gif")
         else:
-            return tk.PhotoImage(file = "white_queen.gif")
+            self.image = tk.PhotoImage(file = "white_queen.gif")
+
 
     def is_valid_move(self, new_x, new_y, board):
         # check if new location is on board, empty and/or occupied by the opposite color
@@ -410,11 +412,13 @@ class Queen(ChessPiece):
 
 class King(ChessPiece):
 
-    def get_image(self):
-        if self.color == "Black": 
-            return tk.PhotoImage(file = "black_king.gif")
+    def __init__(self, x, y, color):
+
+        super(King, self).__init__(x, y, color)
+        if color == "Black": 
+            self.image = tk.PhotoImage(file = "black_king.gif")
         else:
-            return tk.PhotoImage(file = "white_king.gif")
+            self.image = tk.PhotoImage(file = "white_king.gif")
     
     pass # Cyrus
 
@@ -549,7 +553,8 @@ def movement_path_diagonal(piece, board):
 
 
 
-
+def make_photo(filename):
+    return tk.PhotoImage(file = filename)
 
 
     
