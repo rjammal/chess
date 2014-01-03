@@ -1,6 +1,7 @@
 # Making a chess game
 
 import tkinter as tk
+root = tk.Tk()
 
 BOARD_SIZE = 8
 
@@ -82,23 +83,30 @@ class Board:
 
     # Call this function to move pieces on the board
     def board_move(self, piece, new_x, new_y):
-        color = self.get_color()
-        king = 0#get king of color
+        color = piece.get_color()
+        king = self.get_king_of_color(color)
         x = piece.get_x()
         y = piece.get_y()
         
         if piece.is_valid_move(new_x, new_y, self):
+            board_empty = self.is_empty(new_x, new_y)
+            if not board_empty:
+                captured_piece = self.get_piece(new_x, new_y)
             piece.move(new_x, new_y)
-            if king.in_check():
+            if king.in_check(self):
                 piece.move(x, y)
                 print("King is in check!")
             else:
                 self.unset_enpassant(piece)
-                if not self.is_empty(new_x, new_y):
-                    self.get_piece(new_x, new_y).set_captured()
+                if not board_empty:
+                    self.remove_piece(captured_piece)#.set_captured()
                 piece.move(new_x, new_y)
 
-                
+
+    def get_king_of_color(self, color):
+        for piece in self.get_all_pieces():
+            if (isinstance(piece, King) and color == piece.get_color()):
+                return piece
 
     # returns all pawns of the specified color
     def get_pawns_of_color(self, color):
@@ -151,6 +159,8 @@ class ChessPiece():
         return self.color
     def get_image(self):
         return self.image
+    def get_captured(self):
+        return self.captured
     
 
     def set_x(self, x):
@@ -228,23 +238,22 @@ class Pawn(ChessPiece):
         white = self.get_color() == "White"
 
         moving_forward = x == new_x
+        if black:
+                space_ahead = y + 1
+                space_two_ahead = y + 2
+        elif white:
+                space_ahead = y - 1
+                space_two_ahead = y - 2
 
         if moving_forward:
             # check if spot ahead is empty
-            if not board.is_empty(x, y + 1):
+            if not board.is_empty(x, space_ahead):
                 return False
             if self.not_yet_moved:
-                if black:
-                    valid_y = ((y + 1) == new_y or
-                               (y + 2) == new_y)
-                elif white:
-                    valid_y = ((y - 1) == new_y or
-                               (y - 2) == new_y)
+                valid_y = (new_y == space_ahead or
+                           new_y == space_two_ahead)
             else:
-                if black:
-                    valid_y = (y + 1) == new_y
-                elif white:
-                    valid_y = (y - 1) == new_y
+                valid_y = space_ahead == new_y
             return valid_y
         else:
             # This is checking all capture scenarios.
@@ -259,14 +268,16 @@ class Pawn(ChessPiece):
                 if not board.is_empty(new_x, y): # check if there is an adjacent piece
                     adjacent_piece = board.get_piece(new_x, y)
                     if (adjacent_piece.get_color() != self.get_color() and
-                        adjacent_piece.enpassant):
+                        adjacent_piece.enpassant and
+                        new_y == space_ahead):
                         return True
 
                 return False       
 
             else:
                 other_piece = board.get_piece(new_x, new_y)
-                return other_piece.get_color() != self.get_color()
+                different_colors = other_piece.get_color() != self.get_color()
+                return different_colors and new_y == space_ahead
                     
 
 
@@ -419,6 +430,10 @@ class King(ChessPiece):
             self.image = tk.PhotoImage(file = "black_king.gif")
         else:
             self.image = tk.PhotoImage(file = "white_king.gif")
+
+    def in_check(self, board):
+        # placeholder
+        return False
     
     pass # Cyrus
 

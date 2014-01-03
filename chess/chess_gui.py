@@ -1,7 +1,7 @@
 import tkinter as tk
 import chess
 
-SQUARE_SIZE = 100
+SQUARE_SIZE = 110
 HEIGHT = SQUARE_SIZE * chess.BOARD_SIZE
 WIDTH = SQUARE_SIZE * chess.BOARD_SIZE
 
@@ -16,6 +16,10 @@ class ChessGUI(tk.Frame):
         self.board = chess.Board()
         self.draw_board()
         self.draw_pieces()
+        self.canvas.bind('<Button-1>', self.click_move)
+
+        self.active_piece = None
+        self.white_turn = True
 
     def get_board(self):
         return self.board
@@ -43,8 +47,30 @@ class ChessGUI(tk.Frame):
             gif = piece.get_image()
             x = int((piece.get_x() + .5) * SQUARE_SIZE)
             y = int((piece.get_y() + .5) * SQUARE_SIZE)
-
+ 
             self.canvas.create_image(x, HEIGHT - y, image = gif)
+
+    def click_move(self, event):
+        board = self.get_board()
+        x_coord = event.x // SQUARE_SIZE
+        y_coord = (HEIGHT - event.y) // SQUARE_SIZE
+
+        if self.active_piece == None:
+            print(x_coord, y_coord)
+            if not board.is_empty(x_coord, y_coord):
+                self.active_piece = board.get_piece(x_coord, y_coord)
+        else:
+            print(self.active_piece)
+            x = self.active_piece.get_x()
+            y = self.active_piece.get_y()
+            board.board_move(self.active_piece, x_coord, y_coord)
+            if (x != self.active_piece.get_x() or
+                y != self.active_piece.get_y):
+                self.active_piece = None
+                self.white_turn = not self.white_turn
+                self.draw_board()
+                self.draw_pieces()
+                
             
                 
 
