@@ -1,5 +1,6 @@
 import tkinter as tk
 import chess
+import game
 
 SQUARE_SIZE = 110
 HEIGHT = SQUARE_SIZE * chess.BOARD_SIZE
@@ -13,16 +14,15 @@ class ChessGUI(tk.Frame):
         self.grid()
         self.canvas = tk.Canvas(self, height = HEIGHT, width = WIDTH)
         self.canvas.grid()
-        self.board = chess.Board()
+        self.game = game.ChessGame()
         self.draw_board()
         self.draw_pieces()
         self.canvas.bind('<Button-1>', self.click_move)
 
         self.active_piece = None
-        self.white_turn = True
 
     def get_board(self):
-        return self.board
+        return self.game.get_board()
 
     def draw_board(self):
 
@@ -54,23 +54,37 @@ class ChessGUI(tk.Frame):
         board = self.get_board()
         x_coord = event.x // SQUARE_SIZE
         y_coord = (HEIGHT - event.y) // SQUARE_SIZE
+        board_occupied = not board.is_empty(x_coord, y_coord)
+        if board_occupied:
+            selected_piece = board.get_piece(x_coord, y_coord)
+            selected_colors_move = selected_piece.get_color() == self.game.get_turn_color()
 
-        if self.active_piece == None:
-            print(x_coord, y_coord)
-            if not board.is_empty(x_coord, y_coord):
-                self.active_piece = board.get_piece(x_coord, y_coord)
+        # selecting a new active piece or changing active piece
+        if board_occupied and selected_colors_move:
+            self.active_piece = selected_piece
+        # if active piece already exists, move it and de-select
+        elif self.active_piece != None:
+            self.game.move(self.active_piece, x_coord, y_coord)
+            self.active_piece = None
+        # otherwise no action necessary
         else:
-            print(self.active_piece)
+            return
+        
+        self.draw_board()
+        
+        # highlight active square
+        if self.active_piece:
             x = self.active_piece.get_x()
             y = self.active_piece.get_y()
-            board.board_move(self.active_piece, x_coord, y_coord)
-            if (x != self.active_piece.get_x() or
-                y != self.active_piece.get_y):
-                self.active_piece = None
-                self.white_turn = not self.white_turn
-                self.draw_board()
-                self.draw_pieces()
-                
+            self.canvas.create_polygon(x_coord * SQUARE_SIZE, HEIGHT - y_coord * SQUARE_SIZE,
+                                       (x_coord + 1) * SQUARE_SIZE, HEIGHT - y_coord * SQUARE_SIZE,
+                                       (x_coord + 1) * SQUARE_SIZE, HEIGHT - (y_coord + 1) * SQUARE_SIZE,
+                                       x_coord * SQUARE_SIZE, HEIGHT - (y_coord + 1) * SQUARE_SIZE,
+                                       outline = 'Green',
+                                       fill = '',
+                                       width = 5)
+
+        self.draw_pieces() 
             
                 
 

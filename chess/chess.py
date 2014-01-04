@@ -241,15 +241,6 @@ class Pawn(ChessPiece):
         else:
             self.image = tk.PhotoImage(file = "white_pawn.gif")
 
-##    def __eq__(self, other):
-##        is_pawn = isinstance(other, Pawn)
-##        if not is_pawn:
-##            return False
-##        same_location = self.get_x() == other.get_x() and self.get_y() == other.get_y()
-##        same_color = self.get_color() == other.get_color()
-##        return same_location and same_color
-
-
     def move(self, new_x, new_y):
         if abs(self.get_y() - new_y) == 2:
             self.enpassant = True
@@ -288,10 +279,10 @@ class Pawn(ChessPiece):
             # This is checking all capture scenarios.
             
             # Pawn cannot move more than 1 left or right
-            if abs(x - new_x) > 1:
+            if abs(x - new_x) > 1 or new_y != space_ahead:
                 return False
 
-            if board.is_empty(new_x, new_y) and new_y == space_ahead:
+            if board.is_empty(new_x, new_y):
                 # check for enpassant
                 # enpassant_piece may be None
                 enpassant_piece = self.check_enpassant(board, new_x, new_y)
