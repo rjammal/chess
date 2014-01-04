@@ -297,6 +297,8 @@ class Pawn(ChessPiece):
         y = self.get_y()
         if not board.is_empty(new_x, y): # check if there is an adjacent piece
             adjacent_piece = board.get_piece(new_x, y)
+            if not isinstance(adjacent_piece, Pawn):
+                return False
             if (adjacent_piece.get_color() != self.get_color() and
                 adjacent_piece.enpassant):
                 return adjacent_piece
