@@ -74,6 +74,10 @@ class Board:
             self.list_black.remove(piece)
         elif piece.get_color() == "White":
             self.list_white.remove(piece)
+    # This is a separate function from remove_piece so that it is
+    # easier to track how a piece is removed
+    def remove_enpassant(self, piece):
+        self.remove_piece(piece)
     # add piece to the board
     def add_piece(self, piece):
         if piece.get_color() == "Black":
@@ -92,14 +96,21 @@ class Board:
             board_empty = self.is_empty(new_x, new_y)
             if not board_empty:
                 captured_piece = self.get_piece(new_x, new_y)
-            piece.move(new_x, new_y)
+            piece.temp_move(new_x, new_y)
             if king.in_check(self):
-                piece.move(x, y)
+                piece.temp_move(x, y)
                 print("King is in check!")
             else:
+                # Moving piece back to check some enpassant stuff
+                piece.temp_move(x, y)
                 self.unset_enpassant(piece)
                 if not board_empty:
-                    self.remove_piece(captured_piece)#.set_captured()
+                    self.remove_piece(captured_piece)
+                if isinstance(piece, Pawn):
+                    possible_enpassant_piece = piece.check_enpassant(self, new_x, new_y)
+                    if possible_enpassant_piece:
+                        self.remove_piece(possible_enpassant_piece)
+                # now moving for real
                 piece.move(new_x, new_y)
 
 
@@ -125,8 +136,12 @@ class Board:
     # an enpassant state
     def unset_enpassant(self, piece):
         piece_color = piece.get_color()
-        for piece in self.get_pawns_of_color(piece_color):
-            piece.enpassant = False
+        pawn_list = self.get_pawns_of_color(piece_color)
+        if piece in pawn_list:
+            if piece.not_yet_moved: 
+                pawn_list.remove(piece)
+        for pawn in pawn_list:
+            pawn.enpassant = False
             
 
     # returns True if a spot is empty, False if occupied  
@@ -169,8 +184,14 @@ class ChessPiece():
         self.y = y
     def set_captured(self):
         self.captured = True
-    
+
     def move(self, new_x, new_y):
+        self.set_x(new_x)
+        self.set_y(new_y)
+    # this is for checking if a move puts the king in check
+    # without updating state like move does
+    # this should not be overridden
+    def temp_move(self, new_x, new_y):
         self.set_x(new_x)
         self.set_y(new_y)
 
@@ -220,6 +241,14 @@ class Pawn(ChessPiece):
         else:
             self.image = tk.PhotoImage(file = "white_pawn.gif")
 
+##    def __eq__(self, other):
+##        is_pawn = isinstance(other, Pawn)
+##        if not is_pawn:
+##            return False
+##        same_location = self.get_x() == other.get_x() and self.get_y() == other.get_y()
+##        same_color = self.get_color() == other.get_color()
+##        return same_location and same_color
+
 
     def move(self, new_x, new_y):
         if abs(self.get_y() - new_y) == 2:
@@ -262,24 +291,24 @@ class Pawn(ChessPiece):
             if abs(x - new_x) > 1:
                 return False
 
-            if board.is_empty(new_x, new_y):
-                
+            if board.is_empty(new_x, new_y) and new_y == space_ahead:
                 # check for enpassant
-                if not board.is_empty(new_x, y): # check if there is an adjacent piece
-                    adjacent_piece = board.get_piece(new_x, y)
-                    if (adjacent_piece.get_color() != self.get_color() and
-                        adjacent_piece.enpassant and
-                        new_y == space_ahead):
-                        return True
-
-                return False       
+                # enpassant_piece may be None
+                enpassant_piece = self.check_enpassant(board, new_x, new_y)
+                return enpassant_piece      
 
             else:
                 other_piece = board.get_piece(new_x, new_y)
                 different_colors = other_piece.get_color() != self.get_color()
                 return different_colors and new_y == space_ahead
                     
-
+    def check_enpassant(self, board, new_x, new_y):
+        y = self.get_y()
+        if not board.is_empty(new_x, y): # check if there is an adjacent piece
+            adjacent_piece = board.get_piece(new_x, y)
+            if (adjacent_piece.get_color() != self.get_color() and
+                adjacent_piece.enpassant):
+                return adjacent_piece
 
     def in_promotion_space(self):
         if self.get_color() == "White":
