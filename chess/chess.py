@@ -454,10 +454,24 @@ class King(ChessPiece):
             self.image = tk.PhotoImage(file = "white_king.gif")
 
     def in_check(self, board):
-        # placeholder
+        opponent_list = []
+        if self.color == "White":
+            opponent_list = board.get_white()
+        elif self.color == "Black":
+            opponent_list = board.get_black()
+        for piece in opponent_list:
+            if piece.is_valid_move(self.x, self.y, board):
+                return True
         return False
+
+    def is_valid_move(self, new_x, new_y, board):
+        if not super(King, self).is_valid_move(new_x, new_y, board):
+            return False
+        x = self.get_x()
+        y = self.get_y()
+        return abs(new_x - x) <= 1 and abs(new_y - y) <= 1
     
-    pass # Cyrus
+    
 
 
 # helper function to determine distance moved horizontally or vertically
